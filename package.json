@@ -1,0 +1,14 @@
+{
+  "name": "skip-exe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VTOP attendance planner: paste scrapes, cross off days, see projected attendance.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "parse": "node tools/parse.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
