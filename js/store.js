@@ -1,10 +1,14 @@
 /*
  * localStorage wrapper (every access guarded) + app state persistence.
+ * Writes to the synced keys notify onChange listeners (the cloud sync).
  */
 (function (root) {
   'use strict';
   var PREFIX = 'skipexe:';
-  var KEYS = { data: 'data', raw: 'raw', session: 'session', plans: 'plans' };
+  var KEYS = { data: 'data', raw: 'raw', session: 'session', plans: 'plans', meta: 'meta' };
+  // Keys that make up the plan synced to the cloud; writing one stamps the local copy.
+  var SYNCED = [KEYS.data, KEYS.session, KEYS.plans];
+  var listeners = [];
 
   function read(key, fallback) {
     try {
@@ -15,13 +19,70 @@
     }
   }
 
-  function write(key, value) {
+  function rawWrite(key, json) {
     try {
-      root.localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      root.localStorage.setItem(PREFIX + key, json);
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  function rawRead(key) {
+    try {
+      return root.localStorage.getItem(PREFIX + key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * opts.silent: store without marking the copy as edited (used when loading or applying a cloud copy).
+   * Re-saving an identical value is not an edit either, so browsing the planner never looks like a change.
+   */
+  function write(key, value, opts) {
+    var json;
+    try {
+      json = JSON.stringify(value);
+    } catch (e) {
+      return false;
+    }
+    var tracked = SYNCED.indexOf(key) !== -1 && !(opts && opts.silent);
+    var changed = tracked && rawRead(key) !== json;
+    var ok = rawWrite(key, json);
+    if (ok && changed) {
+      setMeta({ dirty: true, rev: meta().rev + 1 });
+      listeners.forEach(function (fn) { fn(key); });
+    }
+    return ok;
+  }
+
+  /**
+   * Sync bookkeeping for the browser copy:
+   *   base:  the cloud row version (updated_at string) this copy was last synced with, or null
+   *   dirty: edited since that sync;  rev: counts edits (a push only clears dirty if none happened meanwhile)
+   *   owner: user id this copy belongs to (null = made while signed out)
+   */
+  function meta() {
+    var m = read(KEYS.meta, {}) || {};
+    return {
+      base: typeof m.base === 'string' && m.base.length <= 64 ? m.base : null,
+      dirty: m.dirty === true,
+      rev: Number.isInteger(m.rev) && m.rev >= 0 ? m.rev : 0,
+      owner: typeof m.owner === 'string' && m.owner ? m.owner : null
+    };
+  }
+
+  function setMeta(patch) {
+    return rawWrite(KEYS.meta, JSON.stringify(Object.assign(meta(), patch)));
+  }
+
+  function onChange(fn) {
+    listeners.push(fn);
+  }
+
+  function clearAll() {
+    Object.keys(KEYS).forEach(function (k) { remove(KEYS[k]); });
   }
 
   function remove(key) {
@@ -46,6 +107,9 @@
   var MAX_COURSES = 60;
   var MAX_CELLS = 400;
   var MAX_COUNT = 9999;
+  var MAX_PLANS = 50;
+  var MAX_PLAN_NAME = 30;
+  var RESERVED_NAMES = ['__proto__', 'constructor', 'prototype'];
 
   function isIso(v) {
     return typeof v === 'string' && ISO_DATE.test(v);
@@ -86,7 +150,7 @@
   }
 
   function normCell(c) {
-    if (!c || typeof c !== 'object' || DAY_NAMES.indexOf(c.day) === -1 || !SLOT.test(c.slot || '')) return null;
+    if (!c || typeof c !== 'object' || DAY_NAMES.indexOf(c.day) === -1 || typeof c.slot !== 'string' || !SLOT.test(c.slot)) return null;
     var col = count(c.col);
     if (col == null) return null;
     return {
@@ -98,8 +162,8 @@
       type: str(c.type, 10),
       venue: str(c.venue, 40),
       group: str(c.group, 20),
-      start: TIME.test(c.start || '') ? c.start : null,
-      end: TIME.test(c.end || '') ? c.end : null,
+      start: typeof c.start === 'string' && TIME.test(c.start) ? c.start : null,
+      end: typeof c.end === 'string' && TIME.test(c.end) ? c.end : null,
       courseId: typeof c.courseId === 'string' ? c.courseId.slice(0, 40) : null
     };
   }
@@ -186,26 +250,35 @@
     return Object.assign({}, s, { today: s.todayOverride || localToday() });
   }
 
-  function loadSession(data) {
-    var s = read(KEYS.session, {});
+  function cleanSession(s, data) {
+    s = s && typeof s === 'object' ? s : {};
     return {
       plan: cleanPlan(s.plan),
       settings: cleanSettings(s.settings, data),
-      planName: typeof s.planName === 'string' ? s.planName : ''
+      planName: typeof s.planName === 'string' ? s.planName.slice(0, MAX_PLAN_NAME) : ''
     };
   }
 
-  function saveSession(session) {
-    return write(KEYS.session, session);
+  function loadSession(data) {
+    return cleanSession(read(KEYS.session, {}), data);
+  }
+
+  function saveSession(session, opts) {
+    return write(KEYS.session, session, opts);
+  }
+
+  function cleanPlans(p) {
+    var out = {};
+    if (p && typeof p === 'object' && !Array.isArray(p)) {
+      Object.keys(p).filter(function (name) {
+        return name.length <= MAX_PLAN_NAME && RESERVED_NAMES.indexOf(name) === -1;
+      }).slice(0, MAX_PLANS).forEach(function (name) { out[name] = cleanPlan(p[name]); });
+    }
+    return out;
   }
 
   function loadPlans() {
-    var p = read(KEYS.plans, {});
-    var out = {};
-    if (p && typeof p === 'object') {
-      Object.keys(p).forEach(function (name) { out[name] = cleanPlan(p[name]); });
-    }
-    return out;
+    return cleanPlans(read(KEYS.plans, {}));
   }
 
   function savePlans(plans) {
@@ -218,6 +291,10 @@
     read: read,
     write: write,
     remove: remove,
+    clearAll: clearAll,
+    meta: meta,
+    setMeta: setMeta,
+    onChange: onChange,
     localToday: localToday,
     isIso: isIso,
     normalizeData: normalizeData,
@@ -225,8 +302,10 @@
     cleanSettings: cleanSettings,
     engineSettings: engineSettings,
     loadSession: loadSession,
+    cleanSession: cleanSession,
     saveSession: saveSession,
     loadPlans: loadPlans,
+    cleanPlans: cleanPlans,
     savePlans: savePlans
   };
 })(typeof self !== 'undefined' ? self : this);

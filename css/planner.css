@@ -11,7 +11,11 @@
   padding: 10px max(var(--gutter), 3vw); background: rgba(232, 20, 27, .92); backdrop-filter: blur(6px);
   border-bottom: 2px solid var(--ink);
 }
-.strip { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; padding-bottom: 4px; }
+.strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.strip::-webkit-scrollbar { height: 8px; }
+.strip::-webkit-scrollbar-track { background: rgba(11, 11, 12, .25); }
+.strip::-webkit-scrollbar-thumb { background: var(--ink); border: 0; }
+@supports not selector(::-webkit-scrollbar) { .strip { scrollbar-color: var(--ink) transparent; } }
 .pill {
   flex: 0 0 auto; min-width: 128px; background: var(--ink); color: var(--paper); border: 2px solid var(--ink);
   border-radius: 12px; padding: 8px 10px; text-align: left; font: inherit; position: relative;
@@ -124,6 +128,10 @@
 
 /* ---- side panel / sheet ---- */
 .panel { position: sticky; top: calc(var(--topbar-h, 60px) + var(--strip-h, 90px) + 12px); display: grid; gap: 12px; max-height: calc(100vh - var(--topbar-h, 60px) - var(--strip-h, 90px) - 24px); overflow: auto; }
+.panel::-webkit-scrollbar { width: 10px; }
+.panel::-webkit-scrollbar-track { background: transparent; margin-block: 14px; }
+.panel::-webkit-scrollbar-thumb { background: var(--ink-3); border: 3px solid var(--ink); }
+.panel:hover::-webkit-scrollbar-thumb { background: var(--lime); }
 .panel-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 .panel-head h2 { font-family: var(--font-pixel); color: var(--lime); font-size: 22px; margin: 0; line-height: 1.1; }
 .panel-head p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }

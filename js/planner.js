@@ -25,8 +25,9 @@
     return store.engineSettings(state.settings);
   }
 
-  function persist() {
-    store.saveSession({ plan: state.plan, settings: state.settings, planName: state.planName });
+  /** opts.silent: re-save without counting it as a user change (loading must not look newer than the cloud). */
+  function persist(opts) {
+    store.saveSession({ plan: state.plan, settings: state.settings, planName: state.planName }, opts);
   }
 
   function update(patch) {
@@ -313,7 +314,12 @@
       sheetOpen: false,
       settingsOpen: false
     };
-    persist();
+    persist({ silent: true });
+  }
+
+  function unload() {
+    state = null;
+    if (hostEl) hostEl.innerHTML = '';
   }
 
   function show() {
@@ -323,5 +329,5 @@
     }
   }
 
-  VAP.planner = { mount: mount, load: load, show: show, hasData: function () { return !!state; } };
+  VAP.planner = { mount: mount, load: load, unload: unload, show: show, hasData: function () { return !!state; } };
 })(typeof self !== 'undefined' ? self : this);

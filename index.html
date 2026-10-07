@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co; base-uri 'none'; form-action 'self'; object-src 'none'">
   <title>SKIP.EXE · VTOP Attendance Planner</title>
   <meta name="description" content="Paste your VTOP attendance, timetable and academic calendar. Cross off days or single classes and see your projected final attendance in every course, live.">
   <meta name="theme-color" content="#e8141b">
@@ -24,6 +25,7 @@
       <a href="#/plan" data-nav="plan">Planner</a>
       <a href="#/" data-scroll="how">How-to</a>
     </nav>
+    <div class="auth" id="auth" hidden></div>
   </header>
 
   <main id="main">
@@ -32,78 +34,19 @@
       <div class="hero">
         <div class="tape" aria-hidden="true"><div class="tape-track">WARNING! 74.99% IS NOT 75% WARNING! DEBAR INCOMING WARNING! 74.99% IS NOT 75% WARNING! DEBAR INCOMING&nbsp;</div></div>
 
-        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="trail-layer" id="trail-layer" aria-hidden="true"></div>
 
-        <svg class="sticker sticker-cal" viewBox="0 0 120 130" aria-hidden="true">
-          <g transform="rotate(-14 60 65)">
-            <rect x="12" y="18" width="96" height="98" rx="12" fill="#fff"/>
-            <rect x="20" y="26" width="80" height="82" rx="6" fill="#111"/>
-            <rect x="20" y="26" width="80" height="20" rx="6" fill="#b8f84a"/>
-            <rect x="34" y="12" width="8" height="22" rx="3" fill="#fff" stroke="#111" stroke-width="3"/>
-            <rect x="78" y="12" width="8" height="22" rx="3" fill="#fff" stroke="#111" stroke-width="3"/>
-            <g fill="#fff"><rect x="28" y="54" width="12" height="10"/><rect x="46" y="54" width="12" height="10"/><rect x="64" y="54" width="12" height="10"/><rect x="82" y="54" width="10" height="10"/><rect x="28" y="70" width="12" height="10"/><rect x="64" y="70" width="12" height="10"/><rect x="82" y="70" width="10" height="10"/><rect x="28" y="86" width="12" height="10"/><rect x="46" y="86" width="12" height="10"/></g>
-            <path d="M44 66 L60 82 M60 66 L44 82" stroke="#e8141b" stroke-width="5" stroke-linecap="square"/>
-          </g>
-        </svg>
-
-        <svg class="sticker sticker-tag" viewBox="0 0 220 90" aria-hidden="true">
-          <g transform="rotate(-8 110 45)">
-            <ellipse cx="110" cy="45" rx="100" ry="34" fill="#111"/>
-            <ellipse cx="110" cy="45" rx="94" ry="28" fill="#ffe22e"/>
-            <text x="110" y="54" text-anchor="middle" font-family="Silkscreen, monospace" font-weight="700" font-size="24" fill="#111" font-style="italic">NO PROXY</text>
-          </g>
-        </svg>
-
-        <div class="hero-figure" aria-hidden="true">
-          <svg viewBox="0 0 400 520" class="figure">
-            <defs>
-              <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#4a4a4f"/>
-                <stop offset=".35" stop-color="#141416"/>
-                <stop offset=".75" stop-color="#050505"/>
-                <stop offset="1" stop-color="#4d0b0b"/>
-              </linearGradient>
-              <linearGradient id="gloss2" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#3a3a3e"/>
-                <stop offset=".4" stop-color="#101012"/>
-                <stop offset="1" stop-color="#5a0d0d"/>
-              </linearGradient>
-              <radialGradient id="headG" cx=".35" cy=".3" r=".8">
-                <stop offset="0" stop-color="#55555b"/>
-                <stop offset=".45" stop-color="#161618"/>
-                <stop offset="1" stop-color="#060606"/>
-              </radialGradient>
-              <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
-            </defs>
-            <!-- torso -->
-            <path d="M40 520 C44 392 104 318 200 306 C296 318 356 392 360 520 Z" fill="url(#gloss)"/>
-            <path d="M150 312 C170 360 230 360 250 312" fill="none" stroke="#000" stroke-width="10" opacity=".6"/>
-            <path d="M178 350 L172 430 M222 350 L228 430" stroke="#2c2c30" stroke-width="5" stroke-linecap="round"/>
-            <!-- hood -->
-            <path d="M86 178 C78 54 322 54 314 178 C318 250 282 296 200 300 C118 296 82 250 86 178 Z" fill="url(#gloss2)"/>
-            <!-- head -->
-            <ellipse cx="200" cy="170" rx="92" ry="102" fill="url(#headG)"/>
-            <ellipse cx="166" cy="98" rx="34" ry="14" fill="#fff" opacity=".22" filter="url(#soft)" transform="rotate(-20 166 98)"/>
-            <!-- arms -->
-            <path d="M104 372 Q14 318 44 214 Q62 150 118 122" fill="none" stroke="url(#gloss)" stroke-width="64" stroke-linecap="round"/>
-            <path d="M296 372 Q386 318 356 214 Q338 150 282 122" fill="none" stroke="url(#gloss2)" stroke-width="64" stroke-linecap="round"/>
-            <!-- left hand -->
-            <g transform="rotate(38 140 140)">
-              <rect x="104" y="96" width="74" height="70" rx="30" fill="url(#gloss)"/>
-              <rect x="170" y="88" width="24" height="76" rx="12" fill="url(#gloss)" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-              <rect x="192" y="96" width="24" height="74" rx="12" fill="url(#gloss)" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-              <rect x="214" y="106" width="22" height="66" rx="11" fill="url(#gloss)" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-            </g>
-            <!-- right hand -->
-            <g transform="rotate(-38 260 140)">
-              <rect x="222" y="96" width="74" height="70" rx="30" fill="url(#gloss2)"/>
-              <rect x="206" y="88" width="24" height="76" rx="12" fill="url(#gloss2)" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-              <rect x="184" y="96" width="24" height="74" rx="12" fill="url(#gloss2)" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-              <rect x="164" y="106" width="22" height="66" rx="11" fill="url(#gloss2)" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-            </g>
-            <ellipse cx="128" cy="120" rx="18" ry="8" fill="#fff" opacity=".16" filter="url(#soft)"/>
-            <ellipse cx="300" cy="300" rx="40" ry="10" fill="#ff3b30" opacity=".18" filter="url(#soft)"/>
-          </svg>
+        <div class="hero-stage" aria-hidden="true">
+          <span class="sticker sticker-cal" data-sticker="calendar"></span>
+          <span class="sticker sticker-clock" data-sticker="clock"></span>
+          <span class="sticker sticker-tag" data-sticker="proxy"></span>
+          <div class="preview" id="hero-preview">
+            <div class="pv-head"><span class="pv-live"></span>LIVE PREVIEW<span class="pv-sem">FALL 2026</span></div>
+            <div class="pv-week" id="pv-week"></div>
+            <ul class="pv-courses" id="pv-courses"></ul>
+            <div class="pv-foot"><span>SKIPPED <b id="pv-skipped">0</b></span><span>LOWEST <b id="pv-lowest">-</b></span></div>
+          </div>
+          <p class="trail-hint"><span class="hint-mouse">MOVE YOUR MOUSE</span><span class="hint-touch">TAP ANYWHERE</span></p>
         </div>
 
         <div class="hero-copy">
@@ -111,7 +54,7 @@
             <span class="line">PROBLEM</span>
             <span class="line">WITH
               <svg class="inline-sticker" viewBox="0 0 40 40" aria-hidden="true"><g fill="#ffe22e" stroke="#111" stroke-width="3"><circle cx="20" cy="9" r="7"/><circle cx="31" cy="20" r="7"/><circle cx="20" cy="31" r="7"/><circle cx="9" cy="20" r="7"/></g><circle cx="20" cy="20" r="6" fill="#e8141b" stroke="#111" stroke-width="3"/></svg>
-              <svg class="inline-sticker" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#1f3bff" stroke="#fff" stroke-width="3"/><text x="20" y="25" text-anchor="middle" font-family="Silkscreen, monospace" font-size="12" font-weight="700" fill="#b8f84a">75%</text></svg>
+              <svg class="inline-sticker" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#1f3bff" stroke="#fff" stroke-width="3"/><text x="20" y="25" text-anchor="middle" font-family="SkipDigits, Silkscreen, monospace" font-size="12" font-weight="700" fill="#b8f84a">75%</text></svg>
             </span>
             <span class="line">ATTENDANCE?<span class="caret" aria-hidden="true"></span></span>
           </h1>
@@ -144,7 +87,7 @@
         </ol>
         <div class="card privacy">
           <h3>PRIVATE BY DEFAULT</h3>
-          <p>Everything runs in your browser. Your scrapes and plans are saved only in this browser's local storage. Nothing is uploaded anywhere.</p>
+          <p>Everything runs in your browser and is saved in this browser's local storage. Log in with Google only if you want your plan on your phone and laptop too: it is then stored in your own row in the database, which only your account can read.</p>
         </div>
         <footer class="foot">Not affiliated with VIT or VTOP. Always check the official numbers on VTOP. Built for students, by a student.</footer>
       </section>
@@ -182,9 +125,15 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="samples/demo-scrapes.js"></script>
+  <script src="js/stickers.js"></script>
+  <script src="js/hero.js"></script>
   <script src="js/parser.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js" integrity="sha384-WgXwGL6fUsYJWNaKJgVbrJKGRQwc1vieh2oy4kw9nXqpNDz3tdSsqEYUgeHD/NuF" crossorigin="anonymous"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/cloud.js"></script>
   <script src="js/setup.js"></script>
   <script src="js/planner-view.js"></script>
   <script src="js/planner.js"></script>
