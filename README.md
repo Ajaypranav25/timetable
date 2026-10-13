@@ -24,6 +24,7 @@ Open `index.html` directly, or host the folder on any static host (GitHub Pages,
 - 1 theory period = 1 class. Each lab slot = 1 class, so an `L7+L8` session counts 2, the way VTOP counts it.
 - Future classes = every instructional day from the attendance copy date (optionally the day after) up to the last theory day / last lab day (set separately), mapped through day-order substitutions (for example "Saturday · Monday day order").
 - Projected % = (attended + future classes not skipped) ÷ (total + all future classes).
+- Each course card leads with the current % (attended ÷ total as copied, labelled NOW) and shows the projected FINAL % under it; one note under the EVERY COURSE heading explains the difference. VTOP rounds percentages up, so 28/34 = 82.35% shows as 83% there.
 - Bands: ≥ 77% safe, 75–77% warning, < 75% danger. VTOP passes 74.01%+, which is shown, but the skip budgets plan around 75% and your custom target.
 - Embedded theory and embedded lab are separate courses.
 

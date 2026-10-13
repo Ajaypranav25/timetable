@@ -50,7 +50,7 @@
   }
 
   function meter(c, target, big) {
-    return '<div class="meter' + (big ? ' meter-lg' : '') + '" title="Scale ' + METER_MIN + '-100%. White mark = 75%, blue = target.">' +
+    return '<div class="meter' + (big ? ' meter-lg' : '') + '" title="FINAL %. Scale ' + METER_MIN + '-100%. White mark = 75%, blue = target.">' +
       '<div class="meter-fill st-' + c.status + '" style="width:' + meterPos(c.projectedPct).toFixed(1) + '%"></div>' +
       '<div class="meter-mark" style="left:' + meterPos(engine.MIN_PCT) + '%"></div>' +
       (target !== engine.MIN_PCT ? '<div class="meter-mark target" style="left:' + meterPos(target) + '%"></div>' : '') +
@@ -183,7 +183,7 @@
         '<span class="cls-name">' + esc(c ? c.name : cls.code) + '</span>' +
         '<span class="cls-meta">' + kindTag(cls.kind) + esc(cls.slots.join('+')) + ' · ' + esc(cls.venue) +
           (cls.count > 1 ? ' · counts ' + cls.count : '') +
-          (c ? ' · <b class="st-' + c.status + '">' + pct(c.projectedPct) + '</b>' : '') + '</span>' +
+          (c ? ' · final <b class="st-' + c.status + '">' + pct(c.projectedPct) + '</b>' : '') + '</span>' +
         '<button type="button" class="btn btn-sm ' + (cls.skipped ? 'btn-lime' : 'btn-ghost') + '" data-act="cls" data-date="' + esc(info.date) + '" data-id="' + esc(cls.id) + '" aria-pressed="' + cls.skipped + '">' +
           (cls.skipped ? 'UNDO' : 'SKIP') + '</button>' +
         '</li>';
@@ -209,16 +209,26 @@
     return '<p>&ge;' + label + ': can skip <b class="' + (k ? 'st-safe' : 'st-warn') + '">' + k + '</b> more ' + (k === 1 ? 'class' : 'classes') + sessions + all + '.</p>';
   }
 
+  /** One note under the EVERY COURSE heading: why each card shows two percentages. */
+  function coursesIntro(lastDay) {
+    return '<p class="courses-intro"><b>WHY TWO NUMBERS?</b> The big number on each card is <b>NOW</b>: your attendance today, ' +
+      'attended &divide; total from your VTOP copy (VTOP rounds up, so 82.35% shows there as 83%). ' +
+      '<b>FINAL</b> under it is where you end up by <b>' + esc(fmtDate(lastDay)) + '</b>: it adds every class left (AHEAD) and counts it as attended, ' +
+      'except the ones you mark skipped (SKIPPED). The strip at the top, the bar, the warnings and the skip budgets all use FINAL.</p>';
+  }
+
   function courses(result, target) {
     return result.courses.map(function (c) {
       var low = result.lowest && result.lowest.id === c.id;
       var note = c.status === 'danger'
-        ? (c.vtopPass ? 'Below 75%, though VTOP passes 74.01%+. Plan around 75%.' : 'Below VTOP\'s 74.01% pass mark: debar risk.')
-        : c.status === 'warn' ? 'Safe, but inside the 75-77% warning band.' : '';
+        ? (c.vtopPass ? 'FINAL is below 75%, though VTOP passes 74.01%+. Plan around 75%.' : 'FINAL is below VTOP\'s 74.01% pass mark: debar risk.')
+        : c.status === 'warn' ? 'FINAL is safe, but inside the 75-77% warning band.' : '';
       return '<article class="card course' + (low ? ' is-lowest' : '') + '" id="course-' + esc(c.id) + '">' +
         '<div class="course-top"><div><h3>' + esc(c.name) + ' ' + kindTag(c.kind) + '</h3>' +
           '<div class="course-sub">' + esc(c.code + ' · ' + c.type + ' · ' + c.slots.join('+') + ' · ' + c.faculty) + '</div></div>' +
-          '<div class="course-pct st-' + c.status + '">' + pct(c.projectedPct) + '<small>' + (low ? 'LOWEST · FINAL' : 'FINAL') + '</small></div></div>' +
+          '<div class="course-pct"><span class="st-' + c.currentStatus + '">' + pct(c.currentPct) + '</span><small>NOW</small>' +
+            '<span class="course-final">FINAL <b class="st-' + c.status + '">' + pct(c.projectedPct) + '</b></span>' +
+            (low ? '<small class="course-low">LOWEST FINAL</small>' : '') + '</div></div>' +
         meter(c, target, true) +
         '<dl class="stats">' +
           '<div><dt>NOW</dt><dd>' + Number(c.attended) + '/' + Number(c.total) + '</dd></div>' +
@@ -274,6 +284,7 @@
     calendar: calendar,
     legend: legend,
     panel: panel,
+    coursesIntro: coursesIntro,
     courses: courses,
     breaks: breaks,
     compare: compare

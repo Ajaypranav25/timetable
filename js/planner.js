@@ -108,7 +108,7 @@
         '<div class="plan-head"><div><h1 class="pixel-title">YOUR PLAN</h1>' +
           '<p class="plan-meta">' + esc(d.semester || 'Semester') + (d.demo ? ' · <b>DEMO DATA</b>' : '') +
           ' · attendance as of <b>' + esc(view.fmtDate(es.snapshotDate)) + '</b> · counting <b>' + esc(view.fmtDate(ctx.start)) + '</b> &rarr; <b>' + esc(view.fmtDate(ctx.end)) + '</b>' +
-          ' · lowest: <b class="st-' + (result.lowest ? result.lowest.status : 'safe') + '">' + (result.lowest ? esc(view.shortName(result.lowest)) + ' ' + view.pct(result.lowest.projectedPct) : '-') + '</b></p></div></div>' +
+          ' · lowest final: <b class="st-' + (result.lowest ? result.lowest.status : 'safe') + '">' + (result.lowest ? esc(view.shortName(result.lowest)) + ' ' + view.pct(result.lowest.projectedPct) : '-') + '</b></p></div></div>' +
         (d.warnings && d.warnings.length ? '<ul class="warn-list">' + d.warnings.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' : '') +
         '<div class="toolbar">' + settingsHtml(state.settings, es) + plansHtml() + '</div>' +
         '<div class="layout">' +
@@ -116,7 +116,7 @@
           '<aside class="card panel' + (state.sheetOpen ? ' is-open' : '') + '" id="day-panel" aria-label="Day details">' + view.panel(d, es, state.plan, result, ctx) + '</aside>' +
         '</div>' +
         '<div class="sheet-backdrop' + (state.sheetOpen ? ' is-open' : '') + '" data-act="panel-close"></div>' +
-        '<h2 class="section-h">EVERY COURSE</h2>' +
+        '<h2 class="section-h">EVERY COURSE</h2>' + view.coursesIntro(ctx.end) +
         '<div class="courses">' + view.courses(result, es.target) + '</div>' +
         '<div class="duo">' +
           '<section><h2 class="section-h">BREAKS</h2><div class="card">' + view.breaks(brks) + '</div></section>' +

@@ -192,6 +192,17 @@ test('status bands', () => {
   assert.equal(engine.passesVtop(74.0), false);
 });
 
+test('current % and its band come from the attendance copy, not the projection', () => {
+  const plan = {
+    days: firstPlan.days.concat(['2026-10-15', '2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31']),
+    classes: firstPlan.classes
+  };
+  const java = engine.project(data, baseSettings(), plan).courses.find((c) => c.code === 'BACSE102');
+  assert.equal(Math.round(java.currentPct * 10) / 10, 81.0); // 34/42
+  assert.equal(java.currentStatus, 'safe');
+  assert.equal(java.status, 'warn'); // final 76.7%
+});
+
 // ---------- hardening (from code review) ----------
 
 const { store } = require('../js/store.js').VAP;

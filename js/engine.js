@@ -208,8 +208,10 @@
       var attended = c.attended + a.future - a.skipped;
       var projectedPct = total ? attended / total * 100 : 100;
       var remaining = a.future - a.skipped;
+      var currentPct = c.total ? c.attended / c.total * 100 : 100;
       return Object.assign({}, c, {
-        currentPct: c.total ? c.attended / c.total * 100 : 100,
+        currentPct: currentPct,
+        currentStatus: status(currentPct),
         future: a.future,
         skipped: a.skipped,
         remaining: remaining,
